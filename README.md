@@ -1,6 +1,6 @@
 # Music Management System
 
-A comprehensive ASP.NET Core MVC web application for managing personal music collections and playlists, featuring full CRUD operations, user authentication, RESTful APIs, AJAX interactivity, and responsive UI.
+A comprehensive ASP.NET Core MVC web application for managing personal music collections and playlists, featuring full CRUD operations, user authentication, RESTful APIs, AJAX interactivity, and responsive UI. I have left some songs and a few playlists in the database.
 
 ## Table of Contents
 
