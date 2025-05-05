@@ -1,0 +1,19 @@
+﻿@model CSCI3110_TermProject.Models.PlaylistSong
+@{
+    ViewData["Title"] = "Add Song to Playlist";
+}
+
+<h1>Add Song to Playlist</h1>
+
+<form asp-action="AddSong">
+    <input type="hidden" name="playlistId" value="@ViewData["PlaylistId"]" />
+
+    <div class="form-group">
+        <label for="SongId">Select Song</label>
+        <select asp-items="ViewBag.SongId" name="songId" class="form-control"></select>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+</form>
+
+<a asp-action="Details" asp-route-id="@ViewData["PlaylistId"]">Back to Playlist</a>

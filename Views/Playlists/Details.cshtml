@@ -1,0 +1,164 @@
+﻿@model CSCI3110_TermProject.Models.Playlist
+@{
+    ViewData["Title"] = "Playlist Details";
+}
+
+<div class="container mt-4">
+    @Html.AntiForgeryToken()
+    <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h2>@Model.Name</h2>
+            <a asp-controller="Home" asp-action="Index" class="btn btn-secondary btn-sm">Back to Home</a>
+        </div>
+        <div class="card-body">
+            <!-- Add Song (AJAX) -->
+            <div class="mb-4">
+                <input type="hidden" id="playlistId" value="@Model.Id" />
+                <div class="input-group">
+                    <select id="songSelect" class="form-select">
+                        <option value="" selected disabled>Choose a song</option>
+                        @foreach (var song in ViewBag.Songs as IEnumerable<CSCI3110_TermProject.Models.Song>)
+                        {
+                            if (!Model.PlaylistSongs.Any(ps => ps.SongId == song.Id))
+                            {
+                                <option value="@song.Id"
+                                        data-path="@song.FilePath"
+                                        data-title="@song.Title"
+                                        data-artist="@song.Artist">
+                                    @song.Title by @song.Artist
+                                </option>
+                            }
+                        }
+                    </select>
+                    <button id="addSongBtn" class="btn btn-primary">Add Song</button>
+                </div>
+            </div>
+
+            <!-- Now Playing -->
+            <h4>Now Playing</h4>
+            <div id="nowPlayingInfo"><strong>No song selected</strong></div>
+            <audio id="mainAudioPlayer" controls class="mb-3" style="width:100%;">
+                <source id="mainAudioSource" src="" type="audio/mpeg" />
+            </audio>
+
+            <!-- Playlist Songs -->
+            <h4>Songs in this Playlist</h4>
+            <div class="list-group" id="playlistSongs">
+                @foreach (var ps in Model.PlaylistSongs)
+                {
+                    <div class="list-group-item d-flex justify-content-between align-items-center" data-id="@ps.SongId">
+                        <span>@ps.Song.Title by @ps.Song.Artist</span>
+                        <div>
+                            <button type="button" class="btn btn-sm btn-outline-primary play-btn me-1"
+                                    data-path="@ps.Song.FilePath"
+                                    data-title="@ps.Song.Title"
+                                    data-artist="@ps.Song.Artist">
+                                ▶ Play
+                            </button>
+                            <button type="button" class="btn btn-sm btn-danger remove-btn" data-songid="@ps.SongId">Remove</button>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+            const playlistId = document.getElementById('playlistId').value;
+            const songSelect = document.getElementById('songSelect');
+            const addBtn = document.getElementById('addSongBtn');
+            const listGroup = document.getElementById('playlistSongs');
+            const audio = document.getElementById('mainAudioPlayer');
+            const source = document.getElementById('mainAudioSource');
+            const info = document.getElementById('nowPlayingInfo');
+
+            function playAudio(path, title, artist) {
+                source.src = path;
+                audio.load();
+                audio.play();
+                info.innerHTML = `<strong>Now Playing:</strong> ${title} by ${artist}`;
+            }
+
+            // Add Song AJAX
+            addBtn.addEventListener('click', async e => {
+                e.preventDefault();
+                const sel = songSelect;
+                const songId = sel.value;
+                if (!songId) { alert('Please select a song to add.'); return; }
+
+                const formData = new URLSearchParams();
+                formData.append('playlistId', playlistId);
+                formData.append('songId', songId);
+                formData.append('__RequestVerificationToken', token);
+
+                const res = await fetch('/Playlists/AddSong', {
+                    method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formData
+                });
+                if (res.ok) {
+                    const option = sel.options[sel.selectedIndex];
+                    const path = option.getAttribute('data-path');
+                    const title = option.getAttribute('data-title');
+                    const artist = option.getAttribute('data-artist');
+
+                    // Create list item
+                    const item = document.createElement('div');
+                    item.className = 'list-group-item d-flex justify-content-between align-items-center';
+                    item.setAttribute('data-id', songId);
+                    item.innerHTML = `
+                    <span>${title} by ${artist}</span>
+                    <div>
+                      <button type="button" class="btn btn-sm btn-outline-primary play-btn me-1"
+                              data-path="${path}" data-title="${title}" data-artist="${artist}">▶ Play</button>
+                      <button type="button" class="btn btn-sm btn-danger remove-btn" data-songid="${songId}">Remove</button>
+                    </div>`;
+                    listGroup.appendChild(item);
+
+                    // Remove option
+                    option.remove(); sel.value = '';
+                } else alert('Failed to add song.');
+            });
+
+            // Delegate remove & play
+            listGroup.addEventListener('click', async e => {
+                const target = e.target;
+                if (target.classList.contains('remove-btn')) {
+                    e.preventDefault();
+                    const songId = target.getAttribute('data-songid');
+                    const item = target.closest('.list-group-item');
+                    const span = item.querySelector('span');
+                    const [title, artist] = span.textContent.split(' by ');
+                    const playBtn = item.querySelector('.play-btn');
+                    const path = playBtn.getAttribute('data-path');
+
+                    const formData = new URLSearchParams();
+                    formData.append('playlistId', playlistId);
+                    formData.append('songId', songId);
+                    formData.append('__RequestVerificationToken', token);
+
+                    const res = await fetch('/Playlists/RemoveSong', {
+                        method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: formData
+                    });
+                    if (res.ok) {
+                        item.remove();
+                        // Re-add to dropdown
+                        const opt = document.createElement('option');
+                        opt.value = songId;
+                        opt.text = `${title} by ${artist}`;
+                        opt.setAttribute('data-path', path);
+                        opt.setAttribute('data-title', title);
+                        opt.setAttribute('data-artist', artist);
+                        songSelect.add(opt);
+                    } else alert('Failed to remove song.');
+                }
+                if (target.classList.contains('play-btn')) {
+                    const btn = target;
+                    playAudio(btn.getAttribute('data-path'), btn.getAttribute('data-title'), btn.getAttribute('data-artist'));
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,35 @@
+﻿@model CSCI3110_TermProject.Models.Song
+
+@{
+    ViewData["Title"] = "Song Details";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header">
+            <h2>@Model.Title by @Model.Artist</h2>
+        </div>
+        <div class="card-body">
+            <p><strong>Album:</strong> @Model.Album</p>
+            <p><strong>Genre:</strong> @Model.Genre</p>
+
+            @if (!string.IsNullOrEmpty(Model.FilePath))
+            {
+                <audio controls style="width:100%;" class="mb-3">
+                    <source src="@Model.FilePath" type="audio/mpeg" />
+                    Your browser does not support the audio element.
+                </audio>
+            }
+
+            <div>
+                <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning me-2">✎ Edit</a>
+                <form asp-action="Delete" asp-route-id="@Model.Id" method="post" class="d-inline"
+                      onsubmit="return confirm('Delete this song?');">
+                    @Html.AntiForgeryToken()
+                    <button type="submit" class="btn btn-danger me-2">🗑 Delete</button>
+                </form>
+                <a asp-controller="Home" asp-action="Index" class="btn btn-secondary">Back to List</a>
+            </div>
+        </div>
+    </div>
+</div>

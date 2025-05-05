@@ -1,0 +1,155 @@
+﻿@model CSCI3110_TermProject.Models.HomeViewModel
+@using System.Text.Json
+@using System.Linq
+
+@{
+    ViewData["Title"] = "Home";
+}
+
+<div class="container mt-5">
+    <!-- Now Playing Section -->
+    <div class="mb-4">
+        <h4>Now Playing</h4>
+        <div id="nowPlayingInfo"><strong>No song selected</strong></div>
+        <audio id="mainAudioPlayer" controls class="mb-3" style="width:100%;">
+            <source id="mainAudioSource" src="" type="audio/mpeg" />
+            Your browser does not support the audio element.
+        </audio>
+    </div>
+
+    <!-- Playlists Section -->
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0">Playlists</h2>
+        <a asp-controller="Playlists" asp-action="Create" class="btn btn-sm btn-primary ms-3" title="Create Playlist">
+            <i class="bi bi-plus-circle me-1"></i> New Playlist
+        </a>
+    </div>
+    @if (!Model.Playlists.Any())
+    {
+        <p>No playlists available.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var pl in Model.Playlists)
+            {
+                <div class="col-md-4 mb-3">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h5 class="card-title">@pl.Name</h5>
+                            <p class="card-text"><small class="text-muted">Owner: @pl.UserId</small></p>
+                            <button type="button" class="btn btn-sm btn-primary play-pl-btn me-1" data-songs='@Html.Raw(JsonSerializer.Serialize(pl.PlaylistSongs.Select(ps => new { path = ps.Song.FilePath, title = ps.Song.Title, artist = ps.Song.Artist })))'>
+                                ▶ Play
+                            </button>
+                            <button type="button" class="btn btn-sm btn-secondary shuffle-pl-btn me-1" data-songs='@Html.Raw(JsonSerializer.Serialize(pl.PlaylistSongs.Select(ps => new { path = ps.Song.FilePath, title = ps.Song.Title, artist = ps.Song.Artist })))'>
+                                🔀 Shuffle
+                            </button>
+                            <a asp-controller="Playlists" asp-action="Details" asp-route-id="@pl.Id" class="btn btn-outline-primary btn-sm me-1">View</a>
+                            <a asp-controller="Playlists" asp-action="Edit" asp-route-id="@pl.Id" class="btn btn-outline-warning btn-sm me-1">Edit</a>
+                            <form asp-controller="Playlists" asp-action="Delete" asp-route-id="@pl.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this playlist?');">
+                                @Html.AntiForgeryToken()
+                                <button type="submit" class="btn btn-outline-danger btn-sm">Delete</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+
+    <hr />
+
+    <!-- Songs Section -->
+    <div class="d-flex align-items-center mb-3">
+        <h2 class="mb-0">Song Library</h2>
+        <a asp-controller="Songs" asp-action="Create" class="btn btn-sm btn-success ms-3">
+            <i class="bi bi-music-note-list me-1"></i> Add New Song
+        </a>
+    </div>
+
+    @if (!Model.Songs.Any())
+    {
+        <p>No songs have been uploaded yet.</p>
+    }
+    else
+    {
+        <div class="row">
+            @foreach (var song in Model.Songs)
+            {
+                <div class="col-md-4 col-lg-3 mb-3">
+                    <div class="card p-2 h-100">
+                        <h6 class="mb-2">@song.Title by @song.Artist</h6>
+                        <p class="mb-1"><small><strong>Album:</strong> @song.Album</small></p>
+                        <p class="mb-2"><small><strong>Genre:</strong> @song.Genre</small></p>
+
+                        <button type="button" class="btn btn-sm btn-primary play-btn me-1" data-path="@song.FilePath" data-title="@song.Title" data-artist="@song.Artist">
+                            ▶ Play
+                        </button>
+                        <a asp-controller="Songs" asp-action="Edit" asp-route-id="@song.Id" class="btn btn-sm btn-warning me-1">Edit</a>
+                        <a asp-controller="Songs" asp-action="Details" asp-route-id="@song.Id" class="btn btn-sm btn-info me-1">Details</a>
+                        <form asp-controller="Songs" asp-action="Delete" asp-route-id="@song.Id" method="post" class="d-inline" onsubmit="return confirm('Delete this song?');">
+                            @Html.AntiForgeryToken()
+                            <button type="submit" class="btn btn-sm btn-danger">Delete</button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const audio = document.getElementById('mainAudioPlayer');
+            const source = document.getElementById('mainAudioSource');
+            const info = document.getElementById('nowPlayingInfo');
+
+            function playList(arr) {
+                let idx = 0;
+                audio.onended = () => {
+                    idx++;
+                    if (idx < arr.length) {
+                        const s = arr[idx];
+                        source.src = s.path;
+                        audio.load();
+                        audio.play();
+                        info.innerHTML = `<strong>Now Playing:</strong> ${s.title} by ${s.artist}`;
+                    }
+                };
+                const first = arr[0];
+                source.src = first.path;
+                audio.load();
+                audio.play();
+                info.innerHTML = `<strong>Now Playing:</strong> ${first.title} by ${first.artist}`;
+            }
+
+            // bind individual song play
+            document.querySelectorAll('.play-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    playList([{ path: btn.getAttribute('data-path'), title: btn.getAttribute('data-title'), artist: btn.getAttribute('data-artist') }]);
+                });
+            });
+
+            // bind playlist play
+            document.querySelectorAll('.play-pl-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const arr = JSON.parse(btn.getAttribute('data-songs'));
+                    if (arr.length) playList(arr);
+                });
+            });
+
+            // bind playlist shuffle
+            document.querySelectorAll('.shuffle-pl-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const arr = JSON.parse(btn.getAttribute('data-songs'));
+                    for (let i = arr.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [arr[i], arr[j]] = [arr[j], arr[i]];
+                    }
+                    if (arr.length) playList(arr);
+                });
+            });
+        });
+    </script>
+}

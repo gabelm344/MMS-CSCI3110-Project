@@ -1,0 +1,35 @@
+﻿@model CSCI3110_TermProject.Models.DashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container mt-4">
+    <h1>Dashboard Summary</h1>
+    <div class="row mt-4">
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2>@Model.TotalSongs</h2>
+                    <p>Total Songs</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2>@Model.TotalPlaylists</h2>
+                    <p>Total Playlists</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 mb-3">
+            <div class="card text-center">
+                <div class="card-body">
+                    <h2>@Model.TotalUsers</h2>
+                    <p>Total Users</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
