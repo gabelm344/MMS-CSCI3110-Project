@@ -92,11 +92,6 @@ Navigate to **Dashboard** via the top nav to view total counts of songs, playlis
 * ARIA labels on interactive elements
 * Keyboard-focusable controls
 
-## AI Disclosure
-
-* **Tool**: ChatGPT was used to brainstorm features and refactor code snippets.
-* **Usage**: Assisted with project structuring, UI/UX suggestions, and documentation outlines.
-
 ---
 
 **Enjoy managing your music!**
