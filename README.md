@@ -38,7 +38,7 @@ A comprehensive ASP.NET Core MVC web application for managing personal music col
 
 ### Prerequisites
 
-* [.NET 7 SDK](https://dotnet.microsoft.com/download)
+* [.NET 7 SDK]
 * Visual Studio 2022 (or VS Code)
 * SQL Server LocalDB (installed with Visual Studio)
 
@@ -54,20 +54,20 @@ A comprehensive ASP.NET Core MVC web application for managing personal music col
 
    ```json
    "ConnectionStrings": {
-     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=MusicAppDB;Trusted_Connection=True;"
+     "DefaultConnection": "Server=(localdb)\\mssqllocaldb;Database=SongsDB;Trusted_Connection=True;"
    }
    ```
 3. **Apply migrations** and create the database:
 
    ```bash
-   dotnet ef database update
+   add-migration SongsDB
    ```
-4. **Run the application**:
+4. **Update the database**:
 
    ```bash
-   dotnet run
+   update-database
    ```
-5. **Browse to** `https://localhost:5001`
+5. **Run the application**
 
 ## API Endpoints
 
@@ -94,7 +94,7 @@ Navigate to **Dashboard** via the top nav to view total counts of songs, playlis
 
 ## AI Disclosure
 
-* **Tool**: ChatGPT (OpenAI o4-mini) used to brainstorm features and refactor code snippets.
+* **Tool**: ChatGPT was used to brainstorm features and refactor code snippets.
 * **Usage**: Assisted with project structuring, UI/UX suggestions, and documentation outlines.
 
 ---
