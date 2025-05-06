@@ -1,9 +1,11 @@
 ﻿using CSCI3110_TermProject.Models;
 using CSCI3110_TermProject.Services;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 
 namespace CSCI3110_TermProject.Controllers
 {
+    [Authorize]
     public class SongsController : Controller
     {
         private readonly ISongRepository _songRepo;
@@ -42,7 +44,6 @@ namespace CSCI3110_TermProject.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("Title,Artist,Album,Genre")] Song song, IFormFile file)
         {
-            // Debug: confirm we hit the action
             Console.WriteLine($"[CTRL] Create POST hit: Title='{song.Title}', FileProvided={file != null}");
 
             // 1) Handle file upload first, so FilePath is populated before validation
@@ -67,7 +68,6 @@ namespace CSCI3110_TermProject.Controllers
             // 2) Validate now that FilePath is set (nullable in model)
             if (!ModelState.IsValid)
             {
-                // Debug: list validation errors
                 var errors = ModelState.Values
                                 .SelectMany(v => v.Errors)
                                 .Select(e => e.ErrorMessage);

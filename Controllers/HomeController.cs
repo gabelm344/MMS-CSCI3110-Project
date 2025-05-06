@@ -1,10 +1,12 @@
 using CSCI3110_TermProject.Models;
 using CSCI3110_TermProject.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace CSCI3110_TermProject.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ISongRepository _songRepo;

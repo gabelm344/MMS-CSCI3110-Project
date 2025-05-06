@@ -2,10 +2,12 @@
 using CSCI3110_TermProject.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using System.Threading.Tasks;
 
 namespace CSCI3110_TermProject.Controllers
 {
+    [Authorize]
     public class DashboardController : Controller
     {
         private readonly ISongRepository _songRepo;
